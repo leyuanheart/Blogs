@@ -172,7 +172,7 @@ gem install jekyll -v 模板的版本（如果你知道的话，一般这个信�
 要么就是按照错误中的指示，在`_layouts`下的`post.html`和`page.html`中
 
 - 将`&&`替换成`and`（这一步可能不需要，你要根据错误里面写的来）
-- 将\{\{site.featured-condition-size\}\}替换成`site.featured-condition-size`（也就是删除中括号）
+- 将\{\{site.featured-condition-size\}\}替换成`site.featured-condition-size`（也就是删除大括号）
 
 如果还有什么其他的问题出现，就参考我之前提到的两篇博客
 
@@ -184,25 +184,20 @@ gem install jekyll -v 模板的版本（如果你知道的话，一般这个信�
 - `_posts`是放置你博客文章的地方，命名规则很重要，必须要符合: `YEAR-MONTH-DAY-title.md` ，并且不能有空格，只能用英文，反正名字可以在博客文的YAML里再指定，所以这里就遵守规则就好
 
 - 一般GitHub项目里都会有一个`.gitignore`的文件，是用来忽略一些我们不需要提交到远程仓库的更新，比如`__pycache__`，以及这里会涉及到的`_site`，最好再加上在本地启动服务会产生的`.jekyll-cache`文件夹，文件里可以这么写
-
+  
   ```bash
   _site
   .jekyll-cache
   ```
-
+  
   详细了解可以参考[Git 忽略提交 .gitignore](https://www.jianshu.com/p/74bd0ceb6182)
 
 - markdown里插入图片在本地是可以指定路径的，但是如果要放到GitHub上，那对应的图片也需要上传，GitHub Pages虽然是免费的，但也不是无限制的，比如
-
+  
   - 仓库空间不大于1G
-
+  
   - 每个月的流量不超过100G
-
+  
   - 每小时更新不超过 10 次
-
+    
     所以如果博文多的话，其实还是有问题的，这个时候你就需要**图床**这个东西了，至于什么是图床，我之前提供的文章里也有介绍，有需要的可以再仔细看看
-
-    
-
-    
-
