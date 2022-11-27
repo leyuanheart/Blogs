@@ -33,13 +33,13 @@ $$
 当转移概率和reward function已知的情况下，可以用**动态规划**来求解上述两个问题。
 
 关于动态规划，我了解的不多，我现在的理解就是一个迭代过程，但是它必须满足一些条件才能使用，这里就贴出周老师课程中的解释：
-![dynamic-programming](https://pic.downk.cc/item/5f1b8cf014195aa59452b29e.png)
+![dynamic-programming](https://pic.imgdb.cn/item/6382c64016f2c2beb12127df.jpg)
 
 > 补充：解释一下上面两个特征，参考这个网站 [What is Dynamic Programming](https://www.educative.io/courses/grokking-dynamic-programming-patterns-for-coding-interviews/m2G1pAq0OO0)
 >
 > 以Fibonacci数列为例
 >
-> ![fibonacci](https://pic.downk.cc/item/5f1b8d7514195aa59452eb07.png)
+> ![fibonacci](https://pic.imgdb.cn/item/6382c84c16f2c2beb1248112.jpg)
 >
 > 我们知道$F(n)=F(n-1)+F(n-2)$ for $n>2$，这就是第一个特征 `optimal substructure`，$F(n)$的问题可以被拆成$F(n-1)$和$F(n-2)$，然后看图可以发现，为了解$F(4）$，$F(2)$被重复调用了2次，$F(1)$被重复调用了3次，这就是第二个特征`overlapping subproblems`，子问题的结果会重复多次利用。
 
@@ -107,7 +107,7 @@ $$
 $\pi'=greedy(v^{\pi})$，这个greedy就是上面说的在每一个state都采取使$q(s,a)$最大的action
 
 放上周老师的图：
-![5](https://pic.downk.cc/item/5f12a9f014195aa59467e25a.png)
+![5](https://pic.imgdb.cn/item/6382c8ba16f2c2beb124f27f.jpg)
 
 具体的算法步骤：
 
@@ -132,10 +132,10 @@ $\pi'=greedy(v^{\pi})$，这个greedy就是上面说的在每一个state都采�
    \pi_{i+1}=\underset{a}{\arg \max}~q^{\pi_i}(s,a)
    $$
 
-![6](https://pic.downk.cc/item/5f1b8d9d14195aa59452fe59.png)
+![6](https://pic.imgdb.cn/item/6382c8dd16f2c2beb1251401.jpg)
 
 再放一个周老师的证明，证明的是用greedy得到的策略一定是优于之前的策略的（value function会更高），公式太长，为了节约时间就直接放图了，比较重要的点我用红线标注出来的了。
-![7](https://pic.downk.cc/item/5f1b8d9d14195aa59452fe65.png)
+![7](https://pic.imgdb.cn/item/6382c8ed16f2c2beb1252283.jpg)
 
 如果一直improve，直到收敛，
 
@@ -216,11 +216,11 @@ $$
 2. value iteration是finding optimal value function + one policy extraction，其实finding optimal value function也可以看成是policy improvement（求max的步骤）和truncated policy evaluation（它也计算了q(s, a)，但是它并不是一直计算到收敛，而是只计算一步就重新指派v(s)了）。
 
 下面是一张总结了使用动态规划来求解MDP中Prediction和Control问题的图，不同的问题使用了什么equation，用了什么算法：
-![8](https://pic.downk.cc/item/5f1b8d9d14195aa59452fe6d.png)
+![8](https://pic.imgdb.cn/item/6382c91d16f2c2beb1254ff9.jpg)
 
 ### PV和VI的python实现
 接下来就要上代码来实际操作了，还是沿用动作空间和状态空间都是离散的设定，所以选择了另一个游戏`FrozenLake-v0`，先说明一下这个游戏的规则：
-![12](https://pic.downk.cc/item/5f1b8df914195aa594532d73.png)
+![12](https://pic.imgdb.cn/item/6382c93a16f2c2beb12571be.jpg)
 
 如图所示，`FrozenLake-v0`是一个$4\times4$格子组成的冰面，格子上的字母分别表示：
 
