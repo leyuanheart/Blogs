@@ -65,7 +65,7 @@ $$
 
 还是以FrozenLake-v0举例
 
-![12](https://pic.downk.cc/item/5f1b8df914195aa594532d73.png)
+![12](https://pic.imgdb.cn/item/6382c93a16f2c2beb12571be.jpg)
 
 ```python
 import gym
