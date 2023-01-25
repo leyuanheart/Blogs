@@ -523,6 +523,7 @@ class PGbaselineAgent(object):
         for (log_prob, baseline), R in zip(self.log_probs_baseline, returns):
             advantage = R - baseline
             self.loss.append(-log_prob * advantage)                               # policy gradient
+
             self.baseline_loss.append(F.smooth_l1_loss(baseline.squeeze(), R))        # baseline function approximation
 
         self.optimizer.zero_grad()
