@@ -367,8 +367,7 @@ class Agent(object):
 
         # estimate
 
-        current_q_values = self.model(batch_state).ga
-        ther(axis=1, index=batch_action)
+        current_q_values = self.model(batch_state).gather(axis=1, index=batch_action)
 
         # target
 
