@@ -10,7 +10,6 @@ tags:
     - Reinforcement Learning
 ---
 
-
 上一篇我们介绍了model-free的MDP方法，主要是MC和TD，之前举的例子都是离散动作和离散状态的环境，首先是因为解释起来很方便，其次，这些问题的状态和动作都比较少，因此我们可以通过维护一张Q table来存储我们想要的value值，但是现实世界中的很多问题状态和动作空间都非常大，比如
 
 - 国际象棋：$10^{47}$ states
@@ -45,14 +44,11 @@ $$
 
 现在假设我们已知真实的value函数$v^{\pi}(s)$，我们该如何做函数近似呢，这其实就和常规的监督学习的流程一样了，先定义一个损失函数，比如mean square error：
 
-
 $$
 J(w)=E_{\pi}[(v^{\pi}(s)-\hat{v}(s;w))^2]
 $$
 
-
 然后求梯度，更新参数：
-
 
 $$
 \begin{gather}
@@ -61,9 +57,7 @@ w_{t+1}=w_t+\Delta w
 \end{gather}
 $$
 
-
 但是实际上我们是不知道真实值的，所以就利用之前model-free的方法去估计value函数，接下来就以$Q(s,a)$来说明了。
-
 
 $$
 \begin{gather}
@@ -72,35 +66,27 @@ J(w)=E_{\pi}[\frac{1}{2}(Q^{\pi}(s,a)-\hat{Q}(s,a;w))^2] \\
 \end{gather}
 $$
 
-
-
 > 上式中的负号("-")在接下来的记号里为了方便就省略了。
 
 对于不同的方法，用来替代$Q^{\pi}(s,a)$的表达式是不同的，
 
 对于MC：
 
-
 $$
 \Delta J(w)=(G_t-\hat{Q}(s_t,a_t;w))\nabla_w\hat{Q}(s_t,a_t;w)
 $$
 
-
 对于Sarsa：
-
 
 $$
 \Delta J(w)=(R_{t+1}+\gamma\hat{Q}(s_{t+1},a_{t+1};w)-\hat{Q}(s_t,a_t;w))\nabla_w\hat{Q}(s_t,a_t;w)
 $$
 
-
 对于Q-learning:
-
 
 $$
 \Delta J(w)=(R_{t+1}+\gamma \underset{a}{\max}\hat{Q}(s_{t+1},a;w)-\hat{Q}(s_t,a_t;w))\nabla_w\hat{Q}(s_t,a_t;w)
 $$
-
 
 这里有一点需要注意一下，就是对于使用TD方法的Sarsa和Q-learning来说，从上面的式子可以看到，它们的target中也是包含待更新的参数的，所以其实上面的式子并不是一个梯度，这也是导致这些算法在训练的过程中很难收敛的原因之一，另外对于off-policy的Q-learning来说，还会面临用来训练的数据（基于behavior policy采样）的分布和要优化的策略（target policy）对应的数据的分布不一致的问题（这在监督学习的框架下是一个很大的问题），同样导致很难收敛。
 
@@ -159,11 +145,11 @@ DeepMind 2015年在Nature上发了一篇强化学习的文章[Human-level contro
 重复：
 
 - for some training steps：
-
 1. ​    从replay memory $D$中采样一个tuple $(s,a,r,s’)$
-2. ​    计算target value：$y = r + \gamma \underset{a'}{\max}\hat{Q}(s',a';w^-)$
-3. ​    随机梯度下降更新参数：$\Delta J(w)=(r+\gamma \underset{a'}{\max}\hat{Q}(s',a';w^-)-\hat{Q}(s,a;w))\nabla_w\hat{Q}(s,a;w)$
 
+2. ​    计算target value：$y = r + \gamma \underset{a'}{\max}\hat{Q}(s',a';w^-)$
+
+3. ​    随机梯度下降更新参数：$\Delta J(w)=(r+\gamma \underset{a'}{\max}\hat{Q}(s',a';w^-)-\hat{Q}(s,a;w))\nabla_w\hat{Q}(s,a;w)$
 - $w^-=w$
 
 ### DQN代码
@@ -201,14 +187,14 @@ class ImageToPyTorch(gym.ObservationWrapper):
     def __init__(self, env):
         super(ImageToPyTorch, self).__init__(env)
         old_shape = self.observation_space.shape  # channel在最后
-        
+
         # 把channel放到最前面
-        
+
         self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(old_shape[-1], old_shape[0], old_shape[1]), dtype=np.uint8)
 
     def observation(self, observation):
         return np.swapaxes(observation, 2, 0)/255.0  # 交换第1和第3位的位置, 并0-1化
-    
+
 def wrap_pytorch(env):
     return ImageToPyTorch(env)
 
@@ -230,57 +216,58 @@ class ExperienceReplayMemory(object):
     def __init__(self, capacity):
         self.capacity = capacity
         self.memory = []
-        
+
     def push(self, transition):
         self.memory.append(transition)
         if len(self.memory) > self.capacity:
             del self.memory[0]
-            
+
     def sample(self, batch_size):
         return random.sample(self.memory, batch_size)
-   
+
     def __len__(self):
         return len(self.memory)
-      
-      
+
+
 ## Network
 
 class DQN(nn.Module):
     def __init__(self, input_shape, num_actions):
         super(DQN, self).__init__()
-        
+
         self.input_shape = input_shape
         self.num_actions = num_actions
-        
+
         self.conv1 = nn.Conv2d(in_channels=self.input_shape[0], out_channels=32,
                                kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
         self.fc1 = nn.Linear(self.feature_size(), 512)
         self.fc2 = nn.Linear(512, self.num_actions)
-        
+
     def forward(self, x):     # x should be torch.float type
-        
+
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
-        
+
         x = x.view(x.shape[0], -1)
-        
+
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        
+
         return x
-    
+
     def feature_size(self):        
         return self.conv3(self.conv2(self.conv1(torch.zeros(1, *self.input_shape)))).view(1, -1).shape[1]
-      
+
 
 ## Hyperparameters
+
 class Config(object):
     def __init__(self):
         pass
-    
+
 config = Config()
 config.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 #epsilon variables    espislon-greedy exploration
@@ -318,54 +305,54 @@ config.max_frames = 1000000    # 训练多少个steps
 class Agent(object):
     def __init__(self, static_policy=False, env=None, config=None):
         self.device = config.device
-        
+
         self.gamma = config.gamma
         self.lr = config.lr
         self.target_net_update_freq = config.target_net_update_freq
         self.experience_replay_size = config.exp_replay_size
         self.batch_size = config.batch_size
         self.learn_start = config.learn_start
-        
+
         self.static_policy = static_policy # 是train模式还evaluate模式
-        
+
         self.env = env
         self.num_feats = env.observation_space.shape
         self.num_actions = env.action_space.n
-            
-        
+
+
         self.memory = ExperienceReplayMemory(self.experience_replay_size)
-                
-        
+
+
         self.model = DQN(self.num_feats, self.num_actions)
         self.target_model = DQN(self.num_feats, self.num_actions)        
         self.target_model.load_state_dict(self.model.state_dict())
-        
+
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
-        
-        
+
+
         # move to correct device
-        
+
         self.model =self.model.to(self.device)
         self.target_model = self.target_model.to(self.device)
-        
-            
+
+
         self.update_count = 0
         self.losses = []
         self.rewards = []
-        
-        
+
+
     def append_to_replay(self, s, a, r, s_, done):
             self.memory.push((s, a, r, s_, done))
-                
-            
+
+
     def pre_minibatch(self):
         transitions = self.memory.sample(self.batch_size)
-        
+
         batch_state, batch_action, batch_reward, batch_next_state, batch_done = zip(*transitions)
         # print(batch_state.dtype)
-        
+
         shape = (-1, ) + self.num_feats
-        
+
         batch_state = torch.tensor(batch_state, device=self.device, dtype=torch.float).view(shape)
         batch_action = torch.tensor(batch_action, device=self.device, dtype=torch.long).squeeze().view(-1, 1)
         batch_reward = torch.tensor(batch_reward, device=self.device, dtype=torch.float).squeeze().view(-1, 1)
@@ -377,72 +364,72 @@ class Agent(object):
 
     def compute_loss(self, batch_vars):
         batch_state, batch_action, batch_reward, batch_next_state, batch_done = batch_vars
-        
+
         # estimate
-        
+
         current_q_values = self.model(batch_state).ga
         ther(axis=1, index=batch_action)
-        
+
         # target
-        
+
         with torch.no_grad():
             # max_next_action = self.target_model(batch_next_state).max(dim=1)[1].view(-1, 1)
-            
+
             max_next_q_values = self.target_model(batch_next_state).max(dim=1)[0].view(-1, 1)
-            
+
             target = batch_reward + self.gamma * max_next_q_values * (1 - batch_done)
-            
+
         diff = target - current_q_values
         loss = self.huber(diff)
         loss = loss.mean()
-        
+
         return loss
-    
-    
+
+
     def update(self, s, a, r, s_, done, frame=0):
         if self.static_policy:
             return None
-        
+
         self.append_to_replay(s, a, r, s_, done)
-        
+
         if frame < self.learn_start:
             return None
-        
+
         batch_vars = self.pre_minibatch()
-        
+
         loss = self.compute_loss(batch_vars)
-        
-        
+
+
         # optimize the model
-        
+
         self.optimizer.zero_grad()
         loss.backward()
         for param in self.model.parameters():
             param.grad.data.clamp(-1, 1)
         self.optimizer.step()
-        
+
         # update target model
-        
+
         self.update_count += 1
         if self.update_count % self.target_net_update_freq == 0:
             self.target_model.load_state_dict(self.model.state_dict())        
-        
+
         self.losses.append(loss.item())
-    
-        
+
+
     def get_action(self, s, eps=0.1):   # epsilon-greedy policy
-        
+
         with torch.no_grad():
             if np.random.random() >= eps or self.static_policy:
                 # print(s.dtype)
-                
+
                 X = torch.tensor([s], device=self.device, dtype=torch.float)
                 a = self.model(X).max(dim=1)[1].view(1, 1)
                 return a.item()
             else:
                 return np.random.randint(0, self.num_actions)
-            
-               
+
+
     def huber(self, x):
         cond = (x.abs() < 1.0).to(torch.float)
         return 0.5 * x.pow(2) * cond + (x.abs() - 0.5) * (1 - cond)  
@@ -450,31 +437,31 @@ class Agent(object):
 
     def save_w(self):
         # Returns a dictionary containing a whole state of the module.
-        
+
         torch.save(self.model.state_dict(), './model.dump')
         torch.save(self.optimizer.state_dict(), './optim.dump')
-        
+
     def load_w(self):
         fname_model = './model.dump'
         fname_optim = './optim.dump'
-        
+
         if os.path.isfile(fname_model):
             self.model.load_state_dict(torch.load(fname_model))
             self.target_model.load_state_dict(self.model.state_dict())
-            
+
         if os.path.isfile(fname_optim):
             self.optimizer.load_state_dict(torch.load(fname_optim))
-            
+
     def save_replay(self):
         pickle.dump(self.memory, open('./exp_replay_agent.dump', 'wb'))
-        
+
     def load_replay(self):
         fname = './exp_replay_agent.dump'
         if os.path.isfile(fname):
             self.memory = pickle.load(open(fname, 'rb'))    
 
 
-            
+
 ## 可视化
 
 def visualize(frame_idx, rewards, losses, elapsed_time):
@@ -489,9 +476,9 @@ def visualize(frame_idx, rewards, losses, elapsed_time):
         plt.title('loss')
         plt.plot(losses)
     plt.show()
-            
-     
-    
+
+
+
 ## training loop
 
 start = timer()
@@ -503,31 +490,30 @@ observation = env.reset()
 
 for frame_idx in range(1, config.max_frames+1):
     epsilon = config.epsilon_by_frame(frame_idx)
-    
+
     action = dqn_agent.get_action(observation, epsilon)
     pre_observation = observation
     observation, reward, done, _ = env.step(action)
-    
+
     dqn_agent.update(pre_observation, action, reward, observation, done, frame_idx)   # 之前这里漏了action, 导致loss怎么也输不出来, 搞了我一天。。。难受
-    
+
     episode_reward += reward
-    
+
     if done:
         observation = env.reset()
         dqn_agent.rewards.append(episode_reward)
         episode_reward = 0
-        
+
         if np.mean(dqn_agent.rewards[-10:]) > 19:
             visualize(frame_idx, dqn_agent.rewards, dqn_agent.losses, timedelta(seconds=int(timer()-start)))
             break
 
     if frame_idx % 10000 == 0:
         visualize(frame_idx, dqn_agent.rewards, dqn_agent.losses, timedelta(seconds=int(timer()-start)))
-        
+
 dqn_agent.save_w()
 
 env.close()    
-
 ```
 
 #### TensorFlow版
@@ -573,13 +559,13 @@ class ReplayBuffer(object):
         self.storage = []
         self.maxsize = size
         self.next_idx = 0
-        
+
     def __len__(self):
         return len(self.storage)
-    
+
     def add(self, obs_t, action, reward, obs_tp1, done):
         data = (obs_t, action, reward, obs_tp1, done)
-        
+
         if self.next_idx >= len(self.storage):
             self.storage.append(data)
         else:
@@ -588,7 +574,7 @@ class ReplayBuffer(object):
 
     def sample(self, batch_size):
         idxes = [random.randint(0, len(self.storage)-1) for _ in range(batch_size)]  # 注意这里random.randint是包括两个端点的，所以右端点要-1，不然可能会报错out of range
-        
+
         obses_t, actions, rewards, obses_tp1, dones = [], [], [], [], []
         data = self.storage[0]
         ob_dtype = data[0].dtype
@@ -610,22 +596,22 @@ class ReplayBuffer(object):
 class DQNNetwork(keras.Model):
     def __init__(self, action_dim):
         super(DQNNetwork, self).__init__()
-        
+
         self.action_dim = action_dim
-        
+
         self.conv1 = layers.Conv2D(filters=32, kernel_size=(8, 8), strides=4)
         self.conv2 = layers.Conv2D(filters=64, kernel_size=(4, 4), strides=2)
         self.conv3 = layers.Conv2D(filters=64, kernel_size=(3, 3), strides=1)
         self.flatten = layers.Flatten()
         self.fc1 = layers.Dense(512)
         self.fc2 = layers.Dense(self.action_dim)
-        
+
     def call(self, obs):
         x = tf.cast(obs, dtype=tf.float32)
         x = tf.nn.relu(self.conv1(obs))
         x = tf.nn.relu(self.conv2(x))
         x = tf.nn.relu(self.conv3(x))  # keras.activations.relu(self.conv3(x))
-        
+
         x = self.flatten(x)
         x = tf.nn.relu(self.fc1(x))
         x = self.fc2(x)
@@ -655,7 +641,7 @@ class DQNNetwork(keras.Model):
 class Config(object):
     def __init__(self):
         pass
-    
+
 config = Config()
 #epsilon variables    espislon-greedy exploration
 
@@ -691,82 +677,82 @@ config.max_frames = 1000000    # 训练多少个steps
 class DQNAlgorithm(object):
     def __init__(self):
         pass
-    
+
 
 
 ## Agent
 
 class DQNAgent(object):
     def __init__(self, network=DQNNetwork, eval_mode=False, env=None, config=None):
-        
+
         self.env = env
         self.obs_dim = env.observation_space.shape
         self.action_dim = env.action_space.n
-        
+
         self.gamma = config.gamma
         self.lr = config.lr
         self.target_net_update_freq = config.target_net_update_freq
         self.experience_replay_size = config.exp_replay_size
         self.batch_size = config.batch_size
         self.learn_start = config.learn_start
-        
+
         self.network = network
         self.eval_mode = eval_mode
-        
+
         self.memory = ReplayBuffer(self.experience_replay_size)
-        
+
         self.model = self.network(self.action_dim)
         self.target_model = self.network(self.action_dim)
         # self.model.build(input_shape=[None]+list(self.obs_dim))
-        
+
         # self.target_model.build(input_shape=[None]+list(self.obs_dim))
-        
+
         self.target_model.set_weights(self.model.get_weights())
 
         self.optimizer = optimizers.Adam(lr=self.lr)
         self.loss = tf.losses.Huber(delta=1.)
-        
+
         self.update_count = 0
         self.losses = []
         self.rewards = []
-        
-    
+
+
     def train(self, frame=0):
         if self.eval_mode:
             return None
-        
+
         if frame < self.learn_start:
             return None
-        
+
         transitions = self.memory.sample(self.batch_size)
         obses_t, actions, rewards, obses_tp1, dones = transitions
-        
-        
+
+
         with tf.GradientTape() as tape:
             # Q(s,a)
             q_vals = self.model(obses_t)
             indices = tf.stack([tf.range(actions.shape[0]), actions], axis=-1)
             chosen_q_vals = tf.gather_nd(q_vals, indices=indices)
             # print('q_vals shape:{}, chosen_q_vals shape:{}'.format(q_vals.shape, chosen_q_vals.shape))
-            
+
             q_tp1_vals = tf.math.reduce_max(self.target_model(obses_tp1), axis=-1)
-            
+
             targets = tf.stop_gradient(rewards + self.gamma * q_tp1_vals * (1-dones))
-            
+
             loss = self.loss(chosen_q_vals, targets)
-            
+
         grads = tape.gradient(loss, self.model.trainable_variables)
         grads = [tf.clip_by_value(grad, -1, 1) for grad in grads]
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
-        
+
         self.losses.append(loss.numpy())
-        
+
         # update target model
         self.update_count += 1
         if self.update_count % self.target_net_update_freq == 0:
             self.target_model.set_weights(self.model.get_weights())
-            
-    
+
+
     def get_action(self, obs, eps=0.1):
         if np.random.random() >= eps or self.eval_mode:
             obs = np.expand_dims(obs, 0)
@@ -786,13 +772,13 @@ class DQNAgent(object):
 
     def load_w(self):
         fname_model = './model_weights.ckpt'
-        
+
         if os.path.isfile(fname_model):
             self.model.load_weights(fname_model)
 
     def save_replay(self):
         pickle.dump(self.memory, open('./exp_replay_agent.dump', 'wb'))
-        
+
     def load_replay(self):
         fname = './exp_replay_agent.dump'
         if os.path.isfile(fname):
@@ -827,33 +813,32 @@ observation = env.reset()
 
 for frame_idx in range(1, config.max_frames+1):
     epsilon = config.epsilon_by_frame(frame_idx)
-    
+
     action = dqn_agent.get_action(observation, epsilon)
     pre_observation = observation
     observation, reward, done, _ = env.step(action)
-    
+
     dqn_agent.memory.add(pre_observation, action, reward, observation, done)
     # print(len(dqn_agent.memory.storage))
-    
+
     dqn_agent.train(frame_idx)
     episode_reward += reward
-    
+
     if done:
         observation = env.reset()
         dqn_agent.rewards.append(episode_reward)
         episode_reward = 0
-        
+
         if np.mean(dqn_agent.rewards[-10:]) > 19:
             visualize(frame_idx, dqn_agent.rewards, dqn_agent.losses, timedelta(seconds=int(timer()-start)))
             break
 
     if frame_idx % 10000 == 0:
         visualize(frame_idx, dqn_agent.rewards, dqn_agent.losses, timedelta(seconds=int(timer()-start)))
-        
+
 dqn_agent.save_w()
 
 env.close()
-
 ```
 
 GitHub上的也有一些比较好的RL代码库，比如[spinningup](https://github.com/openai/spinningup)，[baselines](https://github.com/openai/baselines)，[garage](https://github.com/rlworkgroup/garage)，[rllab](https://github.com/ray-project/ray/blob/master/python/ray/rllib)，但是它们都是有一个代码架构的（确实是应该有，但是其实对初学者不是很友好），基本上涉及到某一个具体的算法，它的一些核心组件都是散落在不同的文件夹里，为了看懂一个算法，可能要索引很多层文件夹才能把所有代码都搜索到，有时候看着看着自己就晕了（我自己就是这样），所以目前我就先把所有的代码放到一起，可能到后面慢慢的我也会采用架构的形式来写了。
