@@ -350,6 +350,6 @@ $$
 
 [The Annotated Transformer](http://nlp.seas.harvard.edu/annotated-transformer/#attention-visualization)
 
-~~[nanoGPT代码~~](https://github.com/karpathy/nanoGPT)
+~~[nanoGPT代码](https://github.com/karpathy/nanoGPT)~~
 
 ~~[Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) （如果不能看YouTube，B站上也有）~~
