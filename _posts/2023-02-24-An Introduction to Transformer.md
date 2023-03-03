@@ -66,6 +66,7 @@ $$
 ![](https://pic.imgdb.cn/item/63f83f0df144a01007e280f6.jpg)
 
 <font color="red">这里我一直有一个疑问，就是所谓的加入上下文信息，就是将其他位置的单词的向量表示乘以一个权重再加到该位置的单词的向量表示上就可以了吗？</font>
+
 我们可以把Self-Attention看成是一种交流机制 (communication mechanism)。如下图所示，把一句话中的每一个词看成一个node，箭头表示信息传递的方向。对于每一个节点，它要做的是汇总所有指向它的节点的信息，做法就是加权平均，权重是data-dependent，通过学习得到。下图是一个有向图的例子，当然对于无向图也是可以的，只要是有边连接都是可以进行communication。
 
 ![](https://pic.imgdb.cn/item/6401fc18f144a01007fbaaa3.jpg)
@@ -564,7 +565,7 @@ print(label_smooth(target))
 
 完整的代码我放在这个github仓库里了：[An-Implementation-of-Transformer](https://github.com/leyuanheart/An-Implementation-of-Transformer) 
 
-## GPT
+## GPT （Update at 2023.3.3）
 
 这一部分我们来介绍GPT。它的全称是Generative Pretrained Transformer。从名字上可以看出GPT是一个生成式模型，它通常是用来生成和target风格类似的内容。比如你有一个莎士比亚戏剧的文本集，你希望通过训练使得GPT能够生成带有莎士比亚风格的内容。
 
