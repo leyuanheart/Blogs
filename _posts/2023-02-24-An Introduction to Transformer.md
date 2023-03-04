@@ -90,7 +90,9 @@ from torch import nn
 
 batch_size = 32
 seq_len = 6     # squence length
+
 n_embd = 10     # embedding dim (d_e metioned above)
+
 x = torch.randn(batch_size, seq_len, n_embd)
 
 class SelfAttention(nn.Module):
@@ -107,10 +109,13 @@ class SelfAttention(nn.Module):
         B, T, d = x.shape   # x shape: [batch_size, max_len, n_embd]
 
         q = self.query(x)                       # [B, T, head_size]
+        
         k = self.query(x)                       # [B, T, head_size]
+        
         v = self.value(x)                       # [B, T, head_size]
 
         wei = q @ k.transpose(-2, -1) * d**0.5  # [B, T, T]
+        
         wei = F.softmax(wei, dim=-1) 
 
         out = wei @ v                           # [B, T, head_size]
@@ -119,6 +124,7 @@ class SelfAttention(nn.Module):
 
 
 head_size = 8   # dimension of query, key and value (set to be the same by default)        
+
 slf_attn = SelfAttention(head_size)        
 print(slf_attn(x).shape)       # [batch_size, max_len, head_size]
 ```
@@ -243,11 +249,13 @@ class LayerNorm(nn.Module):
         super().__init__()
 
         self.a = nn.Parameter(torch.ones(in_dim))   # the 'n_embd' dimension
+
         self.b = nn.Parameter(torch.ones(in_dim))
         self.eps = eps
 
     def forward(self, x):
         # normalize over the 'n_embd' dimension.
+
         means = x.mean(dim=-1, keep_dim=True)
         stds = x.std(dim=-1, keep_dim=True)
 
@@ -343,6 +351,7 @@ class PositionalEncoding(nn.Module):
         super(PositionalEncoding, self).__init__()  
 
         # Compute the positional encodings once in log space.
+
         pe = torch.zeros(max_len, n_embd)
         position = torch.arange(0, max_len).unsqueeze(dim=1)
         div_term = torch.exp(torch.arange(0, n_embd, 2) * -(np.log(10000) / d_model))
@@ -350,11 +359,13 @@ class PositionalEncoding(nn.Module):
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(dim=0) # (1, max_len, d_model)
+
         self.register_buffer('pe', pe)
 
     def forward(self, embedding):
         "Output token embedding + positional encoding."
         # embedding shape: [batch_size, len, n_embd]
+
         x = embedding + self.pe[:, :embedding.size(1), :].requires_grad_(False)
 
         return x
@@ -434,6 +445,7 @@ Sequence Mask的目的是让Decoder不能看见未来的信息。这直观上很
 ```python
 torch.manual_seed(123)
 B, T, C = 4, 8, 32  # batch_size, seq_len, n_embd
+
 x = torch.randn(B, T, C)
 
 head_size = 16
@@ -446,6 +458,7 @@ q = query(x)
 wei = q @ k.transpose(-2, -1)  # [B, T, C] @ [B, C, T] ---> [B, T, T]
 
 # implement sequence mask
+
 tril = torch.tril(torch.ones(T, T))
 wei = wei.masked_fill(tril == 0, float('-inf'))  
 wei = F.softmax(wei, dim=-1)
@@ -549,6 +562,7 @@ $$
 
     def forward(self, target):
         # target shape: [batch_size, seq_len, ] or [N, ]
+ 
         onehot = F.one_hot(target, self.vocab_size)
 
         return (1 - self.smoothing) * onehot + (self.smoothing / (self.vocab_size - 1)) * (1 - onehot)
@@ -557,7 +571,8 @@ $$
 vocab_size = 5
 label_smooth = LabelSmoothing(vocab_size)
 # target = torch.randint(0, 4, (3, 6))  # [batch_size, seq_len]
-target = torch.LongTensor([2, 1, 0, 3, 3])
+
+ target = torch.LongTensor([2, 1, 0, 3, 3])
 
 print(label_smooth(target))        
 ```
@@ -570,7 +585,7 @@ print(label_smooth(target))
 
 这一部分我们来介绍GPT。它的全称是Generative Pretrained Transformer。从名字上可以看出GPT是一个生成式模型，它通常是用来生成和target风格类似的内容。比如你有一个莎士比亚戏剧的文本集，你希望通过训练使得GPT能够生成带有莎士比亚风格的内容。
 
-和上面提到的翻译问题不同，GPT里使用的Transformer是只有Decoder的部分。而翻译问题（比如德语译英语）是既有target context（英语集），还有一个source context（德语集）所以它需要Encoder来编码source的信息，然后在Decoder中使用。从建模的角度来看的话，在翻译问题中Transformer是在构建条件概率模型$P(Y|X)$，而GPT做的是构建构建边际概率模型$P(Y)$。
+和上面提到的翻译问题不同，GPT里使用的Transformer是只有Decoder的部分。而翻译问题（比如德语译英语）是既有target context（英语集），还有一个source context（德语集）所以它需要Encoder来编码source的信息，然后在Decoder中使用。从建模的角度来看的话，在翻译问题中Transformer是在构建条件概率模型$P(Y\|X)$，而GPT做的是构建构建边际概率模型$P(Y)$。
 
 **总结一下：在GPT中只使用Transformer的Decoder部分，由于不需要考虑Encoder的信息，所以原来Decoder中的Cross Attention的部分也可以去掉，只保留Self-Attention和FFN即可。另外生成文本的过程也略有不同，主要体现在得到logit之后的操作：翻译问题是通过$\arg \max$来得到下一个token，而GPT是通过将logit传入一个多项分布中，再通过采样来得到下一个token。前者更在乎准确性，而后者是为了实现从目标分布中生成样本。**
 
@@ -608,19 +623,24 @@ GPT的部分我准备以代码为主的形式来写，原理都在之前的介�
 
 ```python
 # get all the unique characters
+
 chars = sorted(list(set(data)))     # chars[0]: '\n',  chars[1]: ' '
+
 vocab_size = len(chars)
 print("all the unique characters:", ''.join(chars))
 print(f"vocab size: {vocab_size}")
 
-'''
-all the unique characters: 
- !$&',-.3:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-vocab size: 65
-''''
+
+# all the unique characters: 
+
+# !$&',-.3:;?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+
+# vocab size: 65
+
 
 
 # create a mapping from characters to integers
+
 stoi = {ch:i for i, ch in enumerate(chars)}
 itos = {i:ch for i, ch in enumerate(chars)}
 
@@ -636,10 +656,10 @@ def decode(ids):
 print(encode("hi there"))
 print(decode(encode("hi there")))
 
-'''
-[46, 47, 1, 58, 46, 43, 56, 43]
-hi there
-'''
+
+# [46, 47, 1, 58, 46, 43, 56, 43]
+
+# hi there
 ```
 
 上面使用的是character-level的tokenizer。如果遇到更复杂的问题，可能需要用到一些更好的tokenizers，比如[tiktoken](https://github.com/openai/tiktoken)，[SentencePiece](https://github.com/google/sentencepiece)，[spaCy](https://github.com/explosion/spaCy)。
@@ -648,16 +668,18 @@ hi there
 
 ```python
 # create the train, validation split
+
 n = int(0.9 * len(data))   # number of tokens
+
 train_data = torch.as_tensor(encode(data[:n]), dtype=torch.long)
 val_data = torch.as_tensor(encode(data[n:]), dtype=torch.long)
 print(f"train has {len(train_data):,} tokens")
 print(f"val has {len(val_data):,} tokens")
 
-'''
-train has 1,003,854 tokens
-val has 111,540 tokens
-'''
+
+# train has 1,003,854 tokens
+
+# val has 111,540 tokens
 ```
 
 接下来是最关键的步骤了：明确什么是$x$，什么是$y$。GPT的生成方式是token by token。因此对于模型来说，在时刻$t$，$t$之前的所有tokens都可以是它的输入，而输出就是要预测时刻$t$的token。
@@ -684,24 +706,33 @@ for t in range(context_len):
     print(f"when input is {context}, the target is {target}.")
 
 
-'''
-x: tensor([18, 47, 56, 57, 58,  1, 15, 47])
-y: tensor([47, 56, 57, 58,  1, 15, 47, 58])
-when input is tensor([18]), the target is 47.
-when input is tensor([18, 47]), the target is 56.
-when input is tensor([18, 47, 56]), the target is 57.
-when input is tensor([18, 47, 56, 57]), the target is 58.
-when input is tensor([18, 47, 56, 57, 58]), the target is 1.
-when input is tensor([18, 47, 56, 57, 58,  1]), the target is 15.
-when input is tensor([18, 47, 56, 57, 58,  1, 15]), the target is 47.
-when input is tensor([18, 47, 56, 57, 58,  1, 15, 47]), the target is 58.
-'''
+
+# x: tensor([18, 47, 56, 57, 58,  1, 15, 47])
+
+# y: tensor([47, 56, 57, 58,  1, 15, 47, 58])
+
+# when input is tensor([18]), the target is 47.
+
+# when input is tensor([18, 47]), the target is 56.
+
+# when input is tensor([18, 47, 56]), the target is 57.
+
+# when input is tensor([18, 47, 56, 57]), the target is 58.
+
+# when input is tensor([18, 47, 56, 57, 58]), the target is 1.
+
+# when input is tensor([18, 47, 56, 57, 58,  1]), the target is 15.
+
+# when input is tensor([18, 47, 56, 57, 58,  1, 15]), the target is 47.
+
+# when input is tensor([18, 47, 56, 57, 58,  1, 15, 47]), the target is 58.
 ```
 
 上面是一个样本的结果，我们在训练时通常都使用一个batch的样本，所以再构造一个
 
 ```python
 # create data loader
+
 context_len = 8 
 batch_size = 4
 
@@ -719,6 +750,7 @@ def get_batch(data, context_len, atch_size):
 
 xb, yb = get_batch(train_data, context_len, batch_size)
 print(xb.shape)  # [4, 8]
+
 print(yb.shape)  # [4, 8]
 ```
 
@@ -748,18 +780,23 @@ class MultiHeadSelfAttention(nn.Module):
 
     def forward(self, x):
         # x shape: [batch_size, len, d_model]
+
         # mask shape: [1, 1, len, len]
+
         b, t, d_model = x.shape  
 
-        # pre-attention linear projection:         
+        # pre-attention linear projection:    
+     
         q, k, v = self.qkv(x).split(d_model, dim=-1)
 
         # separate different heads: [b, len, h*d] ==> [b, len, h, d]
+
         q = q.view(b, t, self.h, self.d)
         k = k.view(b, t, self.h, self.d)
         v = v.view(b, t, self.h, self.d)
 
         # transpose for attention dot product: [b, len, h, d] ==> [b, h, len, d]
+
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
 
         att = q @ k.transpose(-2, -1) / math.sqrt(self.d)
@@ -769,8 +806,11 @@ class MultiHeadSelfAttention(nn.Module):
         att = self.attn_dropout(att)   # Not mentioned in the paper but practically useful
 
         out = att @ v            # [b, h, len, d]
+
         # transpose to move the head dimension back: [b, h, len, d] ==> [b, len, h, d]
+
         # combine the last two dimensions to concatenate all the heads together: [b, len, h*d]
+
         out = out.transpose(1, 2).contiguous().view(b, t, d_model)
         out = self.proj(out)  # [b, h, len, d]
 
@@ -790,6 +830,7 @@ class PositionWiseFeedForward(nn.Module):
 
     def forward(self, x):
         # x shape: [b, len, d_model]
+
         x = self.w2(F.relu(self.w1(x)))         
 
         return self.dropout(x)
@@ -806,6 +847,7 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x):
         # pre-LayerNorm
+
         x = x + self.dec_attn(self.layer_norm1(x))
         x = x + self.feed_forward(self.layer_norm2(x))
 
@@ -841,16 +883,22 @@ class GPT(nn.Module):
 
         self.context_len = context_len
 
-        # # initialize the weights    
+        # # initialize the weights
+
         # for p in self.parameters():
+
         #     if p.dim() > 1:
+
         #         nn.init.xavier_uniform_(p)
 
     def forward(self, seq):
         # seq shape: [batch_size, seq_len]
+
         b, t = seq.shape
         token_emb = self.token_embedding(seq)  # [b, t, d_model]
+
         pos_emb =self.positional_embedding(torch.arange(t)) # [t, d_model]
+
         x = token_emb + pos_emb   # [b, t, d_model]
 
         x = self.decoder(x)  # [b, t, d_model]
@@ -864,16 +912,23 @@ class GPT(nn.Module):
     @torch.no_grad()
     def generate(self, seq, max_len):
         # seq is [B, t] array of indices in the current context
+
         for _ in range(max_len):
             # crop seq to the last 'context_len' tokens, or the positional embedding will fail
+
             seq_crop = seq[:, -self.context_len:]
             logits = self(seq_crop)
             # focus on only the last time step
+
             logits = logits[:, -1, :]   # [B, vocab_size]
+
             probs = F.softmax(logits, dim=-1)
             # sample from the distribution
+
             idx_next = torch.multinomial(probs, num_samples=1)  # [B, 1]
+
             # append sampled index to the running sequence
+
             seq = torch.cat([seq, idx_next], dim=-1)  # [B, t+1]
 
         return seq
@@ -913,14 +968,19 @@ def eval_loss(model, eval_iters):
 
 vocab_size = len(chars)
 context_len = 8  # context of up to 8 previous characters
+
 d_model = 32     # token embedding dim
+
 h = 4            # number of heads in self-attention   
+
 N = 2            # number of blocks in decoder
+
 dropout = 0.1
 batch_size = 32
 learning_rate = 1e-3
 max_iters = 5000
 eval_interval = 500  # keep frequent because we'll overfit
+
 eval_iters = 200  
 
 seed = 3
@@ -935,11 +995,14 @@ val_losses = []
 start = time.time()
 for step in range(max_iters):   
     # every once in a while evaluate the train and val loss
+
     if step % eval_interval == 0:
         train_loss, val_loss = eval_loss(gpt, eval_iters)
         # print('='*30)
+
         print(f"step: {step}, train loss: {train_loss:.4f}, eval loss: {val_loss:.4f}, time: {timedelta(seconds=time.time()-start)}")
         # print('='*30)
+
         train_losses.append(train_loss)
         val_losses.append(val_loss)
 
@@ -952,7 +1015,9 @@ for step in range(max_iters):
 
 
 # plt.plot(train_losses, label='train_loss')
+
 # plt.plot(val_losses, label='val_loss')
+
 # plt.legend()
 
 
@@ -960,26 +1025,24 @@ gpt.eval()
 start = torch.zeros((1, 1), dtype=torch.long)
 print(decode(gpt.generate(start, max_len=500)[0].tolist()))
 
-
-'''
-May, ber: sahno to wlearis,.
-
-CENCES: say!
-
-QUY I meses!,
-Ny hey,
-'King be digs it nebone, daceelt you hord weake?
-Old in ais Leak-Fuaty nop that muse so-mest:
-I'll for yenest you me his a king and yuuncair gase coush liene, is whyfelly hou eak of to not in denciold
-pot old an Bate one adtle:
-Nowees khe they hond.
-
-KING me stevise, this Garr, Nodsinnashing to od be a with your, grienim us um theed and the reard hes; mary stelt, my.
-
-NRY med an that not Litel, in have, be shees by no's eater.
-Tin
-'''
 ```
+
+> May, ber: sahno to wlearis,.
+> 
+> CENCES: say!
+> 
+> QUY I meses!,
+> Ny hey,
+> 'King be digs it nebone, daceelt you hord weake?
+> Old in ais Leak-Fuaty nop that muse so-mest:
+> I'll for yenest you me his a king and yuuncair gase coush liene, is whyfelly hou eak of to not in denciold
+> pot old an Bate one adtle:
+> Nowees khe they hond.
+> 
+> KING me stevise, this Garr, Nodsinnashing to od be a with your, grienim us um theed and the reard hes; mary stelt, my.
+> 
+> NRY med an that not Litel, in have, be shees by no's eater.
+> Tin
 
 可以看到已经有点那么回事了，虽然许多单词还是错的，但是结构上已经有那种一个人说一段话的意思了。想要更好表现的话就得把模型的规模扩大、训练更长时间了。
 
