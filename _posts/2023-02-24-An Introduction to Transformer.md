@@ -109,13 +109,13 @@ class SelfAttention(nn.Module):
         B, T, d = x.shape   # x shape: [batch_size, max_len, n_embd]
 
         q = self.query(x)                       # [B, T, head_size]
-        
+
         k = self.query(x)                       # [B, T, head_size]
-        
+
         v = self.value(x)                       # [B, T, head_size]
 
         wei = q @ k.transpose(-2, -1) * d**0.5  # [B, T, T]
-        
+
         wei = F.softmax(wei, dim=-1) 
 
         out = wei @ v                           # [B, T, head_size]
@@ -562,7 +562,7 @@ $$
 
     def forward(self, target):
         # target shape: [batch_size, seq_len, ] or [N, ]
- 
+
         onehot = F.one_hot(target, self.vocab_size)
 
         return (1 - self.smoothing) * onehot + (self.smoothing / (self.vocab_size - 1)) * (1 - onehot)
@@ -786,7 +786,7 @@ class MultiHeadSelfAttention(nn.Module):
         b, t, d_model = x.shape  
 
         # pre-attention linear projection:    
-     
+
         q, k, v = self.qkv(x).split(d_model, dim=-1)
 
         # separate different heads: [b, len, h*d] ==> [b, len, h, d]
@@ -1024,7 +1024,6 @@ for step in range(max_iters):
 gpt.eval()
 start = torch.zeros((1, 1), dtype=torch.long)
 print(decode(gpt.generate(start, max_len=500)[0].tolist()))
-
 ```
 
 > May, ber: sahno to wlearis,.
@@ -1051,6 +1050,8 @@ GPT这个部分的代码我也放在这个仓库了：[An-Implementation-of-Tran
 终于写完啦！！！
 
 ## 参考资料
+
+[Attention Is All You Need](https://arxiv.org/pdf/1706.03762.pdf)
 
 [The Illustrated Transformer](http://jalammar.github.io/illustrated-transformer/)
 
