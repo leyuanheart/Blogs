@@ -6,7 +6,7 @@ email: leyuanno.1@outlook.com
 description: "若是瞄准月亮，即使错失，也是落入星辰之中"             # 说实话我还没发现这是用在哪的。。。
 keyword: "我的博客"                         # 貌似也没什么用
 url: "http://leyuanheart.github.io/Blogs/"          # your host, for absolute URL
-baseurl: "/Blogs"      # for example, '/blog' if your blog hosted on 'host/blog'
+baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
 github_repo: "https://github.com/leyuanheart/Blogs.git" # you code repository
 
 # Sidebar settings
