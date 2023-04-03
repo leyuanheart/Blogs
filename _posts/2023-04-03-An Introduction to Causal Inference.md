@@ -469,7 +469,7 @@ $$
 
 ![](https://pic.imgdb.cn/item/642a7481a682492fcc0c9464.jpg)
 
-为了确认是否有直接效应（如果有性别歧视，就要受到处罚），我们自然是需要保持qualification不变，看看性别的不同是否会导致入职率的差异。做法就是condition on $Z$。比如，我们比较$P(hired\|female,~highly~qualified)$和$P(hired\|male,~~highly~~qualified)$。如果有不同，则认为有性别歧视。
+为了确认是否有直接效应（如果有性别歧视，就要受到处罚），我们自然是需要保持qualification不变，看看性别的不同是否会导致入职率的差异。做法就是condition on $Z$。比如，我们比较$P(hired\|female,~highly~qualified)$和$P(hired\|male,~highly~qualified)$。如果有不同，则认为有性别歧视。
 
 然而，如果考虑有一个mediating variable和outcome variable的confounder，比如Income：收入高的家庭的人更有可能获得好的教育资源，从而有更好的学历，另外接触到人脉有可能帮助他们应聘成功。这时如果我们condition on qualification，那么我们就condition on a collider，打开了一条backdoor path。
 
