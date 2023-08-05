@@ -97,6 +97,8 @@ tags:
 
 4. faculty
 
+**特别注意，research可以用复数形式。**
+
 ## 避免重复短语的使用
 
 ![](https://pic.imgdb.cn/item/64ca22e61ddac507cc46c232.jpg)
