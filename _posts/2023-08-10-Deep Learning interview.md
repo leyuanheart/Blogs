@@ -199,11 +199,11 @@ H(\gamma|\theta_1)= & -\sum_{j \in{T,F}}P(\theta_1=j)\left [\sum_{i \in {+,-}}P(
 \end{align*}
 > $$
 > 
-> 因此，information gain为$IG(\theta_1)=H(\gamma)-H(\gamma|\theta_1) \approx 0.32198$.
+> 因此，information gain为$IG(\theta_1)=H(\gamma)-H(\gamma \vert \theta_1) \approx 0.32198$.
 
 > 问题![](https://pic.imgdb.cn/item/64d454811ddac507cce0f054.jpg)
 
-> 补充下列句子：The relative entropy $D(p||q)$ is the measure of <u>**difference**</u> between two distributions. It can also be expressed like a measure of the <u>**inefficiency**</u> of assuming that the distribution is $q$ when the true distribution is $p$.
+> 补充下列句子：The relative entropy $D(p\Vert q)$ is the measure of <u>**difference**</u> between two distributions. It can also be expressed like a measure of the <u>**inefficiency**</u> of assuming that the distribution is $q$ when the true distribution is $p$.
 > 
 > ![](https://pic.imgdb.cn/item/64d454821ddac507cce0f08f.jpg)
 
@@ -213,7 +213,7 @@ H(\gamma|\theta_1)= & -\sum_{j \in{T,F}}P(\theta_1=j)\left [\sum_{i \in {+,-}}P(
 > I(X,Z):=H(X)-H(X|Z)
 > $$
 > 
-> where $H$ is the Shannon entropy, and $H(X |Z)$ is the conditional entropy of $X$ given $Z$：$H(X|Z)=-\sum_zP(Z=z) \left [\sum_x P(X=x|Z=z) \log_2 P(X=x|Z=z) \right]$
+> where $H$ is the Shannon entropy, and $H(X \vert Z)$ is the conditional entropy of $X$ given $Z$：$H(X\vert Z)=-\sum_zP(Z=z) \left [\sum_x P(X=x\vert Z=z) \log_2 P(X=x\vert Z=z) \right]$
 
 ## Chapter 5—Deep Learning: Calculus，Algorithmic differentiation
 
